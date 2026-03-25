@@ -1,47 +1,101 @@
-import { useState } from "react"
-import { ThemeProvider, CssBaseline, Box } from "@mui/material"
-import { BrowserRouter, Routes, Route } from "react-router-dom"
-import { getTheme } from "./theme/theme"
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useState } from "react";
+import { Box } from "@mui/material";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
+import CssBaseline from "@mui/material/CssBaseline";
 
-import Sidebar from "./layout/Sidebar"
-import Topbar from "./layout/Topbar"
+// Layout
+import Sidebar from "./layout/Sidebar";
+import Topbar from "./layout/Topbar";
 
-import Dashboard from "./pages/Dashboard"
-import Cars from "./pages/Cars"
+// Pages
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Dashboard from "./pages/Dashboard";
+import Cars from "./pages/Cars";
 
-export default function App() {
+const ProtectedLayout = ({
+  children,
+  mode,
+  setMode,
+}: {
+  children: React.ReactNode;
+  mode: string;
+  setMode: (mode: string) => void;
+}) => {
+  const token = localStorage.getItem("token");
 
-  const [mode, setMode] = useState<"light" | "dark">("dark")
+  if (!token) {
+    return <Navigate to="/register" />;
+  }
 
-  const theme = getTheme(mode)
+  return (
+    <Box sx={{ display: "flex" }}>
+      <Sidebar />
+
+      <Box sx={{ flex: 1 }}>
+        <Topbar mode={mode} setMode={setMode} />
+
+        <Box sx={{ p: 3 }}>{children}</Box>
+      </Box>
+    </Box>
+  );
+};
+
+const App = () => {
+  const [mode, setMode] = useState("light");
+
+  const theme = createTheme({
+    palette: {
+      mode: mode as "light" | "dark",
+    },
+  });
+
+  const isAuthenticated = !!localStorage.getItem("token");
 
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
 
       <BrowserRouter>
+        <Routes>
 
-        <Box sx={{ display: "flex" }}>
+          <Route
+            path="/"
+            element={
+              isAuthenticated
+                ? <Navigate to="/dashboard" />
+                : <Navigate to="/register" />
+            }
+          />
 
-          <Sidebar />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
-          <Box sx={{ flex: 1 }}>
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedLayout mode={mode} setMode={setMode}>
+                <Dashboard />
+              </ProtectedLayout>
+            }
+          />
 
-            <Topbar mode={mode} setMode={setMode} />
+          <Route
+            path="/cars"
+            element={
+              <ProtectedLayout mode={mode} setMode={setMode}>
+                <Cars />
+              </ProtectedLayout>
+            }
+          />
 
-            <Box sx={{ p: 3 }}>
-              <Routes>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/cars" element={<Cars />} />
-              </Routes>
-            </Box>
+          <Route path="*" element={<Navigate to="/" />} />
 
-          </Box>
-
-        </Box>
-
+        </Routes>
       </BrowserRouter>
-
     </ThemeProvider>
-  )
-}
+  );
+};
+
+export default App;

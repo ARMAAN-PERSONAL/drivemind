@@ -1,7 +1,10 @@
 package com.drivemind.service;
 
 import com.drivemind.model.Car;
+import com.drivemind.model.User;
 import com.drivemind.repository.CarRepository;
+import com.drivemind.repository.UserRepository;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,17 +14,31 @@ import java.util.Optional;
 public class CarService {
 
     private final CarRepository carRepository;
+    private final UserRepository userRepository;
 
-    public CarService(CarRepository carRepository) {
+    public CarService(CarRepository carRepository, UserRepository userRepository) {
         this.carRepository = carRepository;
+        this.userRepository = userRepository;
     }
 
-    public Car addCar(Car car) {
+    // 🔥 ADD CAR (attach user)
+    public Car addCar(Car car, String email) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        car.setUser(user);
+
         return carRepository.save(car);
     }
 
-    public List<Car> getAllCars() {
-        return carRepository.findAll();
+    // 🔥 GET ONLY USER'S CARS
+    public List<Car> getCarsByUser(String email) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return carRepository.findByUser(user);
     }
 
     public Optional<Car> getCarById(Long id) {

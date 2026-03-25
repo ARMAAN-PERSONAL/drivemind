@@ -34,6 +34,11 @@ public class Car {
     // current odometer reading
     private Integer currentMileage;
 
+    // 🔥 NEW: link car to user
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
     // when vehicle was added to system
     private LocalDateTime createdAt;
 

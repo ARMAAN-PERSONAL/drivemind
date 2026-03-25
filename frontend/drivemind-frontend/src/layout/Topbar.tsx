@@ -1,27 +1,45 @@
-import { Box, IconButton } from "@mui/material"
-import DarkModeIcon from "@mui/icons-material/DarkMode"
-import LightModeIcon from "@mui/icons-material/LightMode"
+import { Box, IconButton } from "@mui/material";
+import LightModeIcon from "@mui/icons-material/LightMode";
+import DarkModeIcon from "@mui/icons-material/DarkMode";
+import LogoutIcon from "@mui/icons-material/Logout";
+import { useNavigate } from "react-router-dom";
 
-export default function Topbar({ mode, setMode }: any) {
+const Topbar = ({
+  mode,
+  setMode,
+}: {
+  mode: string;
+  setMode: (mode: string) => void;
+}) => {
+  const navigate = useNavigate();
 
   const toggleTheme = () => {
-    setMode(mode === "dark" ? "light" : "dark")
-  }
+    setMode(mode === "light" ? "dark" : "light");
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/register");
+  };
 
   return (
     <Box
       sx={{
-        height: 60,
         display: "flex",
-        alignItems: "center",
         justifyContent: "flex-end",
-        pr: 3,
-        borderBottom: "1px solid rgba(255,255,255,0.06)"
+        p: 2,
+        gap: 1,
       }}
     >
       <IconButton onClick={toggleTheme}>
-        {mode === "dark" ? <LightModeIcon /> : <DarkModeIcon />}
+        {mode === "light" ? <DarkModeIcon /> : <LightModeIcon />}
+      </IconButton>
+
+      <IconButton onClick={handleLogout} color="error">
+        <LogoutIcon />
       </IconButton>
     </Box>
-  )
-}
+  );
+};
+
+export default Topbar;
