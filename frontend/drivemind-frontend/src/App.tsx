@@ -51,8 +51,6 @@ const App = () => {
     },
   });
 
-  const isAuthenticated = !!localStorage.getItem("token");
-
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -60,10 +58,11 @@ const App = () => {
       <BrowserRouter>
         <Routes>
 
+          {/* 🔥 DEFAULT ROUTE */}
           <Route
             path="/"
             element={
-              isAuthenticated
+              localStorage.getItem("token")
                 ? <Navigate to="/dashboard" />
                 : <Navigate to="/register" />
             }

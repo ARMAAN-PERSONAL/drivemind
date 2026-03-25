@@ -15,67 +15,109 @@ public class NhtsaVinProvider implements VinProvider {
     @Override
     public VinResponse decodeVin(String vin) {
 
-        String url = "https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValuesExtended/" + vin + "?format=json";
-
-        Map response = restTemplate.getForObject(url, Map.class);
-
-        List<Map<String, Object>> results = (List<Map<String, Object>>) response.get("Results");
-
-        Map<String, Object> result = results.get(0);
-
         VinResponse vinResponse = new VinResponse();
 
-        vinResponse.setMake(getString(result, "Make"));
-        vinResponse.setModel(getString(result, "Model"));
-        vinResponse.setTrim(getString(result, "Trim"));
+        try {
 
-        String year = getString(result, "ModelYear");
-        if (year != null) vinResponse.setYear(Integer.parseInt(year));
+            String url = "https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValuesExtended/" + vin + "?format=json";
 
-        vinResponse.setBodyType(getString(result, "BodyClass"));
-        vinResponse.setVehicleType(getString(result, "VehicleType"));
-        vinResponse.setDrivetrain(getString(result, "DriveType"));
+            Map response = restTemplate.getForObject(url, Map.class);
 
-        vinResponse.setFuelType(getString(result, "FuelTypePrimary"));
-        vinResponse.setTransmission(getString(result, "TransmissionStyle"));
+            List<Map<String, Object>> results = (List<Map<String, Object>>) response.get("Results");
 
-        vinResponse.setEngineConfiguration(getString(result, "EngineConfiguration"));
+            if (results == null || results.isEmpty()) {
+                return buildFailure("No VIN data found");
+            }
 
-        String cylinders = getString(result, "EngineCylinders");
-        if (cylinders != null) {
-            vinResponse.setEngineCylinders(Integer.parseInt(cylinders));
+            Map<String, Object> result = results.get(0);
+
+            // 🔥 BASIC INFO
+            vinResponse.setMake(clean(getString(result, "Make")));
+            vinResponse.setModel(clean(getString(result, "Model")));
+            vinResponse.setTrim(clean(getString(result, "Trim")));
+
+            String year = clean(getString(result, "ModelYear"));
+            if (year != null) vinResponse.setYear(parseInt(year));
+
+            vinResponse.setBodyType(clean(getString(result, "BodyClass")));
+            vinResponse.setVehicleType(clean(getString(result, "VehicleType")));
+            vinResponse.setDrivetrain(clean(getString(result, "DriveType")));
+
+            vinResponse.setFuelType(clean(getString(result, "FuelTypePrimary")));
+            vinResponse.setTransmission(clean(getString(result, "TransmissionStyle")));
+
+            vinResponse.setEngineConfiguration(clean(getString(result, "EngineConfiguration")));
+
+            String cylinders = clean(getString(result, "EngineCylinders"));
+            if (cylinders != null) vinResponse.setEngineCylinders(parseInt(cylinders));
+
+            String displacement = clean(getString(result, "DisplacementL"));
+            if (displacement != null) vinResponse.setEngineDisplacement(parseDouble(displacement));
+
+            String hp = clean(getString(result, "EngineHP"));
+            if (hp != null) vinResponse.setEnginePower(parseInt(hp));
+
+            vinResponse.setColor(clean(getString(result, "ExteriorColor")));
+
+            // 🔥 ENGINE DESCRIPTION
+            vinResponse.setEngineDescription(buildEngineDescription(vinResponse));
+
+            // 🔥 FLAGS
+            vinResponse.setHasCoreInfo(
+                    vinResponse.getMake() != null &&
+                            vinResponse.getModel() != null &&
+                            vinResponse.getYear() != null
+            );
+
+            vinResponse.setHasEngineInfo(
+                    vinResponse.getEngineDescription() != null &&
+                            !vinResponse.getEngineDescription().isBlank()
+            );
+
+            // 🔥 STATUS LOGIC
+            if (vinResponse.isHasCoreInfo()) {
+                vinResponse.setStatus("SUCCESS");
+            } else {
+                vinResponse.setStatus("PARTIAL");
+                vinResponse.setMessage("Some vehicle details could not be decoded");
+            }
+
+            vinResponse.setDataSource("NHTSA");
+
+            return vinResponse;
+
+        } catch (Exception e) {
+            return buildFailure("VIN decode failed");
         }
+    }
 
-        String displacement = getString(result, "DisplacementL");
-        if (displacement != null) {
-            vinResponse.setEngineDisplacement(Double.parseDouble(displacement));
+    // 🔥 CLEAN BAD VALUES
+    private String clean(String value) {
+        if (value == null ||
+                value.equals("0") ||
+                value.equalsIgnoreCase("Not Applicable") ||
+                value.isBlank()) {
+            return null;
         }
-
-        String hp = getString(result, "EngineHP");
-        if (hp != null) {
-            vinResponse.setEnginePower(Integer.parseInt(hp));
-        }
-
-        vinResponse.setColor(getString(result, "ExteriorColor"));
-
-        // Fallback engine description
-        vinResponse.setEngineDescription(buildEngineDescription(vinResponse));
-
-        return vinResponse;
+        return value;
     }
 
     private String getString(Map<String, Object> map, String key) {
         Object value = map.get(key);
-
-        if (value == null) return null;
-
-        String str = value.toString();
-
-        if (str.isBlank() || str.equalsIgnoreCase("null")) return null;
-
-        return str;
+        return value == null ? null : value.toString();
     }
 
+    private Integer parseInt(String value) {
+        try { return Integer.parseInt(value); }
+        catch (Exception e) { return null; }
+    }
+
+    private Double parseDouble(String value) {
+        try { return Double.parseDouble(value); }
+        catch (Exception e) { return null; }
+    }
+
+    // 🔥 SMART ENGINE DESCRIPTION
     private String buildEngineDescription(VinResponse vin) {
 
         StringBuilder engine = new StringBuilder();
@@ -89,9 +131,24 @@ public class NhtsaVinProvider implements VinProvider {
         }
 
         if (vin.getEngineCylinders() != null) {
-            engine.append(vin.getEngineCylinders()).append(" Cylinder");
+            engine.append(vin.getEngineCylinders()).append(" Cyl ");
         }
 
-        return engine.toString().trim();
+        if (vin.getEnginePower() != null) {
+            engine.append("(").append(vin.getEnginePower()).append(" HP)");
+        }
+
+        String result = engine.toString().trim();
+
+        return result.isBlank() ? "Engine info not available" : result;
+    }
+
+    // 🔥 FAILURE BUILDER
+    private VinResponse buildFailure(String message) {
+        VinResponse res = new VinResponse();
+        res.setStatus("FAILED");
+        res.setMessage(message);
+        res.setDataSource("NHTSA");
+        return res;
     }
 }

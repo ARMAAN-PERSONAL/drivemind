@@ -4,7 +4,7 @@ const API = axios.create({
   baseURL: "http://localhost:8080/api"
 })
 
-// 🔥 attach token to EVERY request
+// 🔐 attach token
 API.interceptors.request.use((config) => {
   const token = localStorage.getItem("token")
   if (token) {
@@ -13,7 +13,7 @@ API.interceptors.request.use((config) => {
   return config
 })
 
-// 🔥 auto logout if token invalid
+// 🔐 auto logout
 API.interceptors.response.use(
   (res) => res,
   (err) => {
@@ -25,10 +25,46 @@ API.interceptors.response.use(
   }
 )
 
-// existing APIs
+
+// 🚗 Cars APIs
 export const getCars = () => API.get("/cars")
-export const getCar = (id: number) => API.get(`/cars/${id}`)
 export const addCar = (car: any) => API.post("/cars", car)
 export const deleteCar = (id: number) => API.delete(`/cars/${id}`)
-export const updateMileage = (id: number, mileage: number) =>
-  API.put(`/cars/${id}/mileage`, mileage)
+
+
+// 🔥 EXPORT THIS (IMPORTANT)
+export interface VinData {
+  make?: string
+  model?: string
+  year?: number
+  trim?: string
+
+  color?: string
+
+  drivetrain?: string
+  vehicleType?: string
+  bodyType?: string
+
+  engineConfiguration?: string
+  engineCylinders?: number
+  engineDisplacement?: number
+  enginePower?: number
+
+  fuelType?: string
+  transmission?: string
+
+  engineDescription?: string
+
+  status: "SUCCESS" | "PARTIAL" | "FAILED"
+  message?: string
+  dataSource?: string
+  hasCoreInfo?: boolean
+  hasEngineInfo?: boolean
+}
+
+
+// 🔥 VIN DECODE
+export const decodeVin = async (vin: string): Promise<VinData> => {
+  const res = await API.get(`/vin/${vin}`)
+  return res.data
+}

@@ -15,9 +15,19 @@ export default function Login() {
 
       const token = data.accessToken || data.token;
 
+      if (!token) {
+        alert("No token received");
+        return;
+      }
+
       localStorage.setItem("token", token);
 
-      navigate("/"); // ✅ clean redirect (no reload)
+      // 🔥 go directly to dashboard
+      navigate("/dashboard");
+
+      // 🔥 force re-evaluation of auth (important)
+      window.location.reload();
+
     } catch (err: any) {
       alert(err.response?.data?.message || "Login failed");
     }
@@ -30,7 +40,7 @@ export default function Login() {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        background: "#0f172a",
+        bgcolor: "background.default", // ✅ FIXED THEME
       }}
     >
       <Paper sx={{ p: 5, width: 350, borderRadius: 3 }}>

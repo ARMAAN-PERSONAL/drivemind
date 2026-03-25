@@ -5,118 +5,15 @@ import {
   Button,
   TextField,
   Paper,
-  MenuItem,
-  Select,
-  InputLabel,
-  FormControl
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  CircularProgress,
+  Alert
 } from "@mui/material"
 
-import { getCars, addCar, deleteCar } from "../api/carApi"
-
-
-
-const carModels: Record<string, string[]> = {
-
-  Acura:["ILX","Integra","TLX","RDX","MDX"],
-
-  "Alfa Romeo":["Giulia","Stelvio","Tonale"],
-
-  "Aston Martin":["Vantage","DB11","DB12","DBX"],
-
-  Audi:["A3","A4","A5","A6","A7","A8","Q3","Q5","Q7","Q8","e-tron"],
-
-  Bentley:["Bentayga","Continental GT","Flying Spur"],
-
-  BMW:["2 Series","3 Series","4 Series","5 Series","7 Series","8 Series","X1","X3","X5","X7","i4","i7","iX"],
-
-  Buick:["Encore","Encore GX","Envision","Enclave"],
-
-  Cadillac:["CT4","CT5","XT4","XT5","XT6","Escalade","Lyriq"],
-
-  Chevrolet:["Spark","Malibu","Camaro","Corvette","Trailblazer","Equinox","Blazer","Traverse","Tahoe","Suburban","Silverado"],
-
-  Chrysler:["300","Pacifica"],
-
-  Dodge:["Charger","Challenger","Durango","Hornet"],
-
-  Ferrari:["Roma","F8","296 GTB","SF90","Purosangue"],
-
-  Fiat:["500","500X"],
-
-  Ford:["Mustang","Escape","Bronco","Explorer","Expedition","F-150","Ranger","Maverick"],
-
-  Genesis:["G70","G80","G90","GV60","GV70","GV80"],
-
-  GMC:["Terrain","Acadia","Yukon","Canyon","Sierra"],
-
-  Honda:["Civic","Accord","CR-V","Pilot","HR-V","Ridgeline","Odyssey"],
-
-  Hyundai:["Elantra","Sonata","Venue","Kona","Tucson","Santa Fe","Palisade","Ioniq 5","Ioniq 6"],
-
-  INEOS:["Grenadier"],
-
-  Infiniti:["Q50","QX50","QX55","QX60","QX80"],
-
-  Jaguar:["XE","XF","F-Type","E-Pace","F-Pace","I-Pace"],
-
-  Jeep:["Compass","Cherokee","Grand Cherokee","Wrangler","Gladiator"],
-
-  Kia:["Forte","K5","Soul","Seltos","Sportage","Sorento","Telluride","EV6"],
-
-  Lamborghini:["Huracan","Revuelto","Urus"],
-
-  "Land Rover":["Discovery","Discovery Sport","Range Rover","Range Rover Sport","Range Rover Velar","Range Rover Evoque"],
-
-  Lexus:["IS","ES","LS","UX","NX","RX","GX","LX"],
-
-  Lincoln:["Corsair","Nautilus","Aviator","Navigator"],
-
-  Lotus:["Emira","Eletre"],
-
-  Lucid:["Air","Gravity"],
-
-  Maserati:["Ghibli","Quattroporte","Levante","MC20"],
-
-  Mazda:["Mazda3","Mazda6","CX-30","CX-5","CX-9","CX-90","MX-5 Miata"],
-
-  McLaren:["570S","720S","750S","Artura"],
-
-  "Mercedes-Benz":["A-Class","C-Class","E-Class","S-Class","CLA","CLS","GLA","GLB","GLC","GLE","GLS","EQB","EQE","EQS"],
-
-  MINI:["Cooper","Clubman","Countryman"],
-
-  Mitsubishi:["Mirage","Outlander","Outlander Sport"],
-
-  Nissan:["Versa","Sentra","Altima","Maxima","Kicks","Rogue","Murano","Pathfinder","Frontier","Titan","Z","GT-R"],
-
-  Polestar:["Polestar 2","Polestar 3","Polestar 4"],
-
-  Porsche:["718 Cayman","718 Boxster","911","Taycan","Macan","Cayenne","Panamera"],
-
-  Ram:["1500","2500","3500","ProMaster"],
-
-  Rivian:["R1T","R1S"],
-
-  "Rolls-Royce":["Ghost","Phantom","Cullinan","Spectre"],
-
-  Subaru:["Impreza","WRX","Legacy","Outback","Forester","Crosstrek","Ascent","BRZ"],
-
-  Tesla:["Model 3","Model S","Model X","Model Y","Cybertruck"],
-
-  Toyota:["Corolla","Camry","Prius","Supra","GR86","C-HR","RAV4","Highlander","Sequoia","Tacoma","Tundra","Sienna"],
-
-  VinFast:["VF6","VF7","VF8","VF9"],
-
-  Volkswagen:["Jetta","Passat","Golf","GTI","Tiguan","Atlas","ID.4"],
-
-  Volvo:["S60","S90","XC40","XC60","XC90","EX30","EX90"]
-}
-
-
-
-const years = Array.from({ length: 30 }, (_, i) => new Date().getFullYear() - i)
-
-
+import { getCars, addCar, deleteCar, decodeVin } from "../api/carApi"
 
 export default function Cars() {
 
@@ -129,7 +26,11 @@ export default function Cars() {
   const [trim,setTrim]=useState("")
   const [mileage,setMileage]=useState("")
 
-
+  // 🔥 VIN state
+const [vinData,setVinData]=useState<any>(null)
+  const [open,setOpen]=useState(false)
+  const [loading,setLoading]=useState(false)
+  const [error,setError]=useState("")
 
   const loadCars=async()=>{
     const res=await getCars()
@@ -140,7 +41,31 @@ export default function Cars() {
     loadCars()
   },[])
 
+  // 🔥 DECODE VIN (LEVEL 2)
+  const handleDecodeVin=async()=>{
+    if(!vin) return alert("Enter VIN")
 
+    try{
+      setLoading(true)
+      setError("")
+
+      const data = await decodeVin(vin)
+
+      setVinData(data)
+      setOpen(true)
+
+      // 🔥 SAFE AUTO-FILL
+      setMake(data.make || "")
+      setModel(data.model || "")
+      setYear(data.year || "")
+      setTrim(data.trim || "")
+
+    }catch(err:any){
+      setError(err.message || "VIN decode failed")
+    }finally{
+      setLoading(false)
+    }
+  }
 
   const handleAddCar=async()=>{
 
@@ -165,24 +90,17 @@ export default function Cars() {
     loadCars()
   }
 
-
-
   const handleDelete=async(id:number)=>{
     await deleteCar(id)
     loadCars()
   }
 
-
-
   return(
-
     <Box>
 
       <Typography variant="h4" mb={3}>
         Cars
       </Typography>
-
-
 
       <Paper sx={{p:3,mb:4}}>
 
@@ -190,15 +108,11 @@ export default function Cars() {
           Add Vehicle
         </Typography>
 
-
-
         <Box sx={{
           display:"grid",
           gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",
           gap:2
         }}>
-
-
 
           <TextField
             label="VIN"
@@ -206,112 +120,86 @@ export default function Cars() {
             onChange={(e)=>setVin(e.target.value)}
           />
 
-
-
-          <FormControl>
-
-            <InputLabel>Make</InputLabel>
-
-            <Select
-              value={make}
-              label="Make"
-              onChange={(e)=>{
-                setMake(e.target.value)
-                setModel("")
-              }}
-            >
-
-              {Object.keys(carModels).map((m)=>(
-                <MenuItem key={m} value={m}>
-                  {m}
-                </MenuItem>
-              ))}
-
-            </Select>
-
-          </FormControl>
-
-
-
-          <FormControl disabled={!make}>
-
-            <InputLabel>Model</InputLabel>
-
-            <Select
-              value={model}
-              label="Model"
-              onChange={(e)=>setModel(e.target.value)}
-            >
-
-              {(carModels[make] || []).map((m)=>(
-                <MenuItem key={m} value={m}>
-                  {m}
-                </MenuItem>
-              ))}
-
-            </Select>
-
-          </FormControl>
-
-
-
-          <FormControl>
-
-            <InputLabel>Year</InputLabel>
-
-            <Select
-              value={year}
-              label="Year"
-              onChange={(e)=>setYear(Number(e.target.value))}
-            >
-
-              {years.map((y)=>(
-                <MenuItem key={y} value={y}>
-                  {y}
-                </MenuItem>
-              ))}
-
-            </Select>
-
-          </FormControl>
-
-
-
-          <TextField
-            label="Trim"
-            value={trim}
-            onChange={(e)=>setTrim(e.target.value)}
-          />
-
-
-          <TextField
-            label="Mileage"
-            value={mileage}
-            onChange={(e)=>setMileage(e.target.value)}
-          />
-
-
-
           <Button
-            variant="contained"
-            onClick={handleAddCar}
+            variant="outlined"
+            onClick={handleDecodeVin}
           >
+            {loading ? <CircularProgress size={20}/> : "Decode VIN"}
+          </Button>
+
+          {/* 🔥 ERROR DISPLAY */}
+          {error && (
+            <Alert severity="error">{error}</Alert>
+          )}
+
+          <TextField label="Make" value={make} onChange={(e)=>setMake(e.target.value)} />
+          <TextField label="Model" value={model} onChange={(e)=>setModel(e.target.value)} />
+          <TextField label="Year" value={year} onChange={(e)=>setYear(Number(e.target.value))} />
+          <TextField label="Trim" value={trim} onChange={(e)=>setTrim(e.target.value)} />
+          <TextField label="Mileage" value={mileage} onChange={(e)=>setMileage(e.target.value)} />
+
+          <Button variant="contained" onClick={handleAddCar}>
             Add Car
           </Button>
 
-
-
         </Box>
-
       </Paper>
 
+      {/* 🔥 VIN POPUP (LEVEL 2) */}
+      <Dialog open={open} onClose={()=>setOpen(false)} fullWidth>
 
+        <DialogTitle>Decoded VIN Details</DialogTitle>
+
+        <DialogContent>
+
+          {vinData && (
+
+            <Box>
+
+              {/* 🔥 STATUS ALERT */}
+              {vinData.status === "PARTIAL" && (
+                <Alert severity="warning" sx={{ mb:2 }}>
+                  {vinData.message || "Partial VIN data available"}
+                </Alert>
+              )}
+
+              {vinData.status === "SUCCESS" && (
+                <Alert severity="success" sx={{ mb:2 }}>
+                  VIN decoded successfully
+                </Alert>
+              )}
+
+              {/* 🚗 VEHICLE */}
+              <Typography fontWeight="bold" mt={1}>Vehicle</Typography>
+              <Typography>Make: {vinData.make || "—"}</Typography>
+              <Typography>Model: {vinData.model || "—"}</Typography>
+              <Typography>Year: {vinData.year || "—"}</Typography>
+              <Typography>Trim: {vinData.trim || "—"}</Typography>
+
+              {/* ⚙️ ENGINE */}
+              <Typography fontWeight="bold" mt={2}>Engine</Typography>
+              <Typography>{vinData.engineDescription || "—"}</Typography>
+
+              {/* 🧾 EXTRA */}
+              <Typography fontWeight="bold" mt={2}>Details</Typography>
+              <Typography>Fuel: {vinData.fuelType || "—"}</Typography>
+              <Typography>Transmission: {vinData.transmission || "—"}</Typography>
+              <Typography>Drivetrain: {vinData.drivetrain || "—"}</Typography>
+
+            </Box>
+          )}
+
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={()=>setOpen(false)}>Close</Button>
+        </DialogActions>
+
+      </Dialog>
 
       <Typography variant="h6" mb={2}>
         Your Vehicles
       </Typography>
-
-
 
       {cars.map((car)=>(
         <Paper
@@ -324,30 +212,21 @@ export default function Cars() {
             alignItems:"center"
           }}
         >
-
           <Box>
-
             <Typography fontWeight="bold">
               {car.year} {car.make} {car.model}
             </Typography>
-
             <Typography>
               {car.trim} • {car.currentMileage} km
             </Typography>
-
           </Box>
 
-          <Button
-            color="error"
-            onClick={()=>handleDelete(car.id)}
-          >
+          <Button color="error" onClick={()=>handleDelete(car.id)}>
             Delete
           </Button>
-
         </Paper>
       ))}
 
     </Box>
-
   )
 }
