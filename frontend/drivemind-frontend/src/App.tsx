@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Box } from "@mui/material";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
+import Fuel from "./pages/Fuel"
 
 // Layout
 import Sidebar from "./layout/Sidebar";
@@ -90,6 +91,15 @@ const App = () => {
           />
 
           <Route path="*" element={<Navigate to="/" />} />
+
+          <Route
+            path="/fuel"
+            element={
+              <ProtectedLayout mode={mode} setMode={setMode}>
+                <Fuel />
+              </ProtectedLayout>
+            }
+          />
 
         </Routes>
       </BrowserRouter>

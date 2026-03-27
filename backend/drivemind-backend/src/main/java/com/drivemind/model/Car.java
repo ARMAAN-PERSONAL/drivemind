@@ -2,6 +2,7 @@ package com.drivemind.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -39,12 +40,14 @@ public class Car {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+
+
     // when vehicle was added to system
     private LocalDateTime createdAt;
 
     // relationship mappings
-
     @OneToMany(mappedBy = "car", cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<FuelLog> fuelLogs;
 
     @OneToMany(mappedBy = "car", cascade = CascadeType.ALL)

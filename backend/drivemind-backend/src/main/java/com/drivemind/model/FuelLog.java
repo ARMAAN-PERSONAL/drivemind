@@ -2,6 +2,7 @@ package com.drivemind.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import java.time.LocalDate;
 
@@ -29,7 +30,9 @@ public class FuelLog {
     // odometer reading at fill-up
     private Integer mileage;
 
+
     @ManyToOne
-    @JoinColumn(name = "car_id", nullable = false)
+    @JoinColumn(name = "car_id")
+    @JsonBackReference
     private Car car;
 }

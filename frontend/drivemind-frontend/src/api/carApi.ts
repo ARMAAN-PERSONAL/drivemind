@@ -68,3 +68,10 @@ export const decodeVin = async (vin: string): Promise<VinData> => {
   const res = await API.get(`/vin/${vin}`)
   return res.data
 }
+
+// ⛽ Fuel APIs
+export const getFuelLogs = (carId: number) =>
+  API.get(`/fuel/${carId}`)
+
+export const addFuelLog = (carId: number, log: any) =>
+  API.post(`/fuel/${carId}`, log)
