@@ -75,3 +75,10 @@ export const getFuelLogs = (carId: number) =>
 
 export const addFuelLog = (carId: number, log: any) =>
   API.post(`/fuel/${carId}`, log)
+
+// 🛠️ Maintenance APIs
+export const getMaintenanceLogs = (carId: number) =>
+  API.get(`/maintenance/${carId}`)
+
+export const addMaintenanceLog = (carId: number, log: any) =>
+  API.post(`/maintenance/${carId}`, log)

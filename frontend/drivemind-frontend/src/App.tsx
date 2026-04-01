@@ -4,6 +4,7 @@ import { Box } from "@mui/material";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import Fuel from "./pages/Fuel"
+import Maintenance from "./pages/Maintenance"
 
 // Layout
 import Sidebar from "./layout/Sidebar";
@@ -97,6 +98,15 @@ const App = () => {
             element={
               <ProtectedLayout mode={mode} setMode={setMode}>
                 <Fuel />
+              </ProtectedLayout>
+            }
+          />
+
+          <Route
+            path="/maintenance"
+            element={
+              <ProtectedLayout mode={mode} setMode={setMode}>
+                <Maintenance />
               </ProtectedLayout>
             }
           />

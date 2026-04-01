@@ -7,6 +7,8 @@ import {
   Paper,
   MenuItem
 } from "@mui/material"
+import { Link } from "react-router-dom"
+import BuildIcon from "@mui/icons-material/Build"
 
 import { getCars, getFuelLogs, addFuelLog } from "../api/carApi"
 
@@ -99,10 +101,19 @@ export default function Fuel() {
 
   return (
     <Box>
-
-      <Typography variant="h4" mb={3}>
-        Fuel Logs
-      </Typography>
+      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+        <Typography variant="h4">
+          Fuel Logs
+        </Typography>
+        <Button
+          component={Link}
+          to="/maintenance"
+          variant="outlined"
+          startIcon={<BuildIcon />}
+        >
+          Maintenance
+        </Button>
+      </Box>
 
       {/* SELECT CAR */}
       <Paper sx={{ p: 3, mb: 3 }}>
