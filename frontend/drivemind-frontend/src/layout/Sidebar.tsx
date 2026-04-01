@@ -3,6 +3,7 @@ import DirectionsCarIcon from "@mui/icons-material/DirectionsCar"
 import DashboardIcon from "@mui/icons-material/Dashboard"
 import LocalGasStationIcon from "@mui/icons-material/LocalGasStation"
 import { Link, useLocation } from "react-router-dom"
+import BuildIcon from "@mui/icons-material/Build"
 
 export default function Sidebar() {
 
@@ -71,6 +72,14 @@ export default function Sidebar() {
           sx={navButtonStyle("/fuel")}
         >
           Fuel
+        </Button>
+        <Button
+          component={Link}
+          to="/maintenance"
+          startIcon={<BuildIcon />}
+          sx={navButtonStyle("/maintenance")}
+        >
+          Maintenance
         </Button>
 
       </Box>

@@ -3,7 +3,9 @@ import { useState } from "react";
 import { Box } from "@mui/material";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
-import Fuel from "./pages/Fuel"
+
+import Fuel from "./pages/Fuel";
+import Maintenance from "./pages/Maintenance";
 
 // Layout
 import Sidebar from "./layout/Sidebar";
@@ -59,7 +61,7 @@ const App = () => {
       <BrowserRouter>
         <Routes>
 
-          {/* 🔥 DEFAULT ROUTE */}
+          {/* DEFAULT */}
           <Route
             path="/"
             element={
@@ -69,9 +71,11 @@ const App = () => {
             }
           />
 
+          {/* AUTH */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
+          {/* PROTECTED */}
           <Route
             path="/dashboard"
             element={
@@ -90,8 +94,6 @@ const App = () => {
             }
           />
 
-          <Route path="*" element={<Navigate to="/" />} />
-
           <Route
             path="/fuel"
             element={
@@ -100,6 +102,19 @@ const App = () => {
               </ProtectedLayout>
             }
           />
+
+          {/* 🔥 NEW MAINTENANCE ROUTE */}
+          <Route
+            path="/maintenance"
+            element={
+              <ProtectedLayout mode={mode} setMode={setMode}>
+                <Maintenance />
+              </ProtectedLayout>
+            }
+          />
+
+          {/* ❗ ALWAYS KEEP THIS LAST */}
+          <Route path="*" element={<Navigate to="/" />} />
 
         </Routes>
       </BrowserRouter>
