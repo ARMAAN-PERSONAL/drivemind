@@ -2,11 +2,11 @@ import { Box, Typography, Button } from "@mui/material"
 import DirectionsCarIcon from "@mui/icons-material/DirectionsCar"
 import DashboardIcon from "@mui/icons-material/Dashboard"
 import LocalGasStationIcon from "@mui/icons-material/LocalGasStation"
-import { Link, useLocation } from "react-router-dom"
 import BuildIcon from "@mui/icons-material/Build"
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome"
+import { Link, useLocation } from "react-router-dom"
 
 export default function Sidebar() {
-
   const location = useLocation()
 
   const isActive = (path: string) => location.pathname === path
@@ -36,7 +36,6 @@ export default function Sidebar() {
         p: 3
       }}
     >
-      {/* LOGO */}
       <Typography
         variant="h6"
         sx={{ fontWeight: "bold", mb: 5 }}
@@ -44,14 +43,12 @@ export default function Sidebar() {
         DriveMind
       </Typography>
 
-      {/* NAV ITEMS */}
       <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-
         <Button
           component={Link}
-          to="/"
+          to="/dashboard"
           startIcon={<DashboardIcon />}
-          sx={navButtonStyle("/")}
+          sx={navButtonStyle("/dashboard")}
         >
           Dashboard
         </Button>
@@ -73,6 +70,7 @@ export default function Sidebar() {
         >
           Fuel
         </Button>
+
         <Button
           component={Link}
           to="/maintenance"
@@ -82,7 +80,15 @@ export default function Sidebar() {
           Maintenance
         </Button>
 
+        <Button
+          component={Link}
+          to="/insights"
+          startIcon={<AutoAwesomeIcon />}
+          sx={navButtonStyle("/insights")}
+        >
+          Insights
+        </Button>
       </Box>
     </Box>
   )
-}[]
+}

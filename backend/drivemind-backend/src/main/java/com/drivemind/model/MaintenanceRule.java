@@ -18,8 +18,11 @@ public class MaintenanceRule {
 
     private String serviceType;
 
-    // distance interval for service
     private Integer intervalKm;
 
     private String description;
+
+    @ManyToOne
+    @JoinColumn(name = "car_id", nullable = false)
+    private Car car;
 }

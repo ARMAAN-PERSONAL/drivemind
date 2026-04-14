@@ -1,35 +1,36 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useState } from "react";
-import { Box } from "@mui/material";
-import { ThemeProvider, createTheme } from "@mui/material/styles";
-import CssBaseline from "@mui/material/CssBaseline";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
+import { useState } from "react"
+import { Box } from "@mui/material"
+import { ThemeProvider, createTheme } from "@mui/material/styles"
+import CssBaseline from "@mui/material/CssBaseline"
 
-import Fuel from "./pages/Fuel";
-import Maintenance from "./pages/Maintenance";
+import Fuel from "./pages/Fuel"
+import Maintenance from "./pages/Maintenance"
 
 // Layout
-import Sidebar from "./layout/Sidebar";
-import Topbar from "./layout/Topbar";
+import Sidebar from "./layout/Sidebar"
+import Topbar from "./layout/Topbar"
 
 // Pages
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Dashboard from "./pages/Dashboard";
-import Cars from "./pages/Cars";
+import Login from "./pages/Login"
+import Register from "./pages/Register"
+import Dashboard from "./pages/Dashboard"
+import Cars from "./pages/Cars"
+import Insights from "./pages/Insights"
 
 const ProtectedLayout = ({
   children,
   mode,
   setMode,
 }: {
-  children: React.ReactNode;
-  mode: string;
-  setMode: (mode: string) => void;
+  children: React.ReactNode
+  mode: string
+  setMode: (mode: string) => void
 }) => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("token")
 
   if (!token) {
-    return <Navigate to="/register" />;
+    return <Navigate to="/register" />
   }
 
   return (
@@ -38,21 +39,20 @@ const ProtectedLayout = ({
 
       <Box sx={{ flex: 1 }}>
         <Topbar mode={mode} setMode={setMode} />
-
         <Box sx={{ p: 3 }}>{children}</Box>
       </Box>
     </Box>
-  );
-};
+  )
+}
 
 const App = () => {
-  const [mode, setMode] = useState("light");
+  const [mode, setMode] = useState("light")
 
   const theme = createTheme({
     palette: {
       mode: mode as "light" | "dark",
     },
-  });
+  })
 
   return (
     <ThemeProvider theme={theme}>
@@ -60,8 +60,6 @@ const App = () => {
 
       <BrowserRouter>
         <Routes>
-
-          {/* DEFAULT */}
           <Route
             path="/"
             element={
@@ -71,11 +69,9 @@ const App = () => {
             }
           />
 
-          {/* AUTH */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
-          {/* PROTECTED */}
           <Route
             path="/dashboard"
             element={
@@ -103,7 +99,6 @@ const App = () => {
             }
           />
 
-          {/* 🔥 NEW MAINTENANCE ROUTE */}
           <Route
             path="/maintenance"
             element={
@@ -113,13 +108,20 @@ const App = () => {
             }
           />
 
-          {/* ❗ ALWAYS KEEP THIS LAST */}
-          <Route path="*" element={<Navigate to="/" />} />
+          <Route
+            path="/insights"
+            element={
+              <ProtectedLayout mode={mode} setMode={setMode}>
+                <Insights />
+              </ProtectedLayout>
+            }
+          />
 
+          <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </BrowserRouter>
     </ThemeProvider>
-  );
-};
+  )
+}
 
-export default App;
+export default App
