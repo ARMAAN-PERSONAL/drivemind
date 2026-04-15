@@ -12,7 +12,15 @@ import lombok.NoArgsConstructor;
 public class AiInsightResponse {
     private String summary;
     private String recommendation;
-    private String overallStatus;   // HEALTHY / DUE_SOON / OVERDUE
-    private Integer healthScore;    // out of 100
-    private boolean aiGenerated;    // true if OpenAI succeeded, false if fallback
+    private String overallStatus;
+    private Integer healthScore;
+    private boolean aiGenerated;
+
+    private Integer fuelLogCount;
+    private Double totalFuelSpend;
+    private Double averageFuelSpend;
+    private Double averageFuelVolume;
+    private Double latestFuelCost;
+    private Double latestFuelVolume;
+    private Integer latestFuelMileage;
 }

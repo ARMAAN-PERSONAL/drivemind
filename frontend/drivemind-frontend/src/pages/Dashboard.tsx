@@ -139,19 +139,6 @@ export default function Dashboard() {
 
         <Paper sx={cardSx} onClick={() => navigate("/maintenance")}>
           <Typography variant="h6" sx={{ color: theme.palette.text.secondary }}>
-            Maintenance Logs
-          </Typography>
-          <Typography
-            variant="h3"
-            fontWeight="bold"
-            sx={{ color: theme.palette.text.primary }}
-          >
-            {summary.maintenanceLogCount}
-          </Typography>
-        </Paper>
-
-        <Paper sx={cardSx} onClick={() => navigate("/maintenance")}>
-          <Typography variant="h6" sx={{ color: theme.palette.text.secondary }}>
             Maintenance Rules
           </Typography>
           <Typography

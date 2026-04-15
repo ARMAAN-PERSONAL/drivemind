@@ -59,12 +59,31 @@ export interface AiInsightResponse {
   overallStatus: "HEALTHY" | "DUE_SOON" | "OVERDUE"
   healthScore: number
   aiGenerated: boolean
+  fuelLogCount: number
+  totalFuelSpend: number
+  averageFuelSpend: number
+  averageFuelVolume: number
+  latestFuelCost: number | null
+  latestFuelVolume: number | null
+  latestFuelMileage: number | null
 }
 
 export const getAiInsight = (carId: number) =>
   API.get<AiInsightResponse>(`/insights/${carId}/ai-summary`)
 
-// 🔥 EXPORT THIS (IMPORTANT)
+// 🌟 Vehicle Spotlight API
+export interface VehicleSpotlightResponse {
+  summary: string
+  powertrainNote: string
+  imageQuery: string
+  imageSearchUrl: string
+  aiGenerated: boolean
+}
+
+export const getVehicleSpotlight = (carId: number) =>
+  API.get<VehicleSpotlightResponse>(`/insights/${carId}/vehicle-spotlight`)
+
+// 🔥 RAW VIN DECODE
 export interface VinData {
   make?: string
   model?: string
@@ -72,7 +91,6 @@ export interface VinData {
   trim?: string
 
   color?: string
-
   drivetrain?: string
   vehicleType?: string
   bodyType?: string
@@ -84,7 +102,6 @@ export interface VinData {
 
   fuelType?: string
   transmission?: string
-
   engineDescription?: string
 
   status: "SUCCESS" | "PARTIAL" | "FAILED"
@@ -94,9 +111,47 @@ export interface VinData {
   hasEngineInfo?: boolean
 }
 
-// 🔥 VIN DECODE
 export const decodeVin = async (vin: string): Promise<VinData> => {
   const res = await API.get(`/vin/${vin}`)
+  return res.data
+}
+
+// 🚀 ENRICHED VIN DECODE
+export interface EnrichedVinData {
+  make: string
+  model: string
+  year: number | null
+  trim: string
+
+  color: string
+  drivetrain: string
+  vehicleType: string
+  bodyType: string
+
+  engineConfiguration: string
+  engineCylinders: number | null
+  engineDisplacement: number | null
+  enginePower: number | null
+
+  fuelType: string
+  transmission: string
+  engineDescription: string
+
+  vehicleCategory: string
+  shortSummary: string
+  confidenceLabel: "HIGH" | "MEDIUM" | "LOW" | string
+
+  hasCoreInfo: boolean
+  hasEngineInfo: boolean
+  aiGenerated: boolean
+
+  dataSource: string
+  status: "SUCCESS" | "PARTIAL" | "FAILED"
+  message?: string
+}
+
+export const decodeEnrichedVin = async (vin: string): Promise<EnrichedVinData> => {
+  const res = await API.get(`/vin/enriched/${vin}`)
   return res.data
 }
 
@@ -116,6 +171,11 @@ export interface MaintenanceRule {
   car?: any
 }
 
+export interface GenerateStarterRulesResponse {
+  addedCount: number
+  maintenanceProfile: string
+}
+
 export const getMaintenanceRules = (carId: number) =>
   API.get<MaintenanceRule[]>(`/maintenance-rules/${carId}`)
 
@@ -130,3 +190,6 @@ export const addMaintenanceRule = (
 
 export const deleteMaintenanceRule = (ruleId: number) =>
   API.delete(`/maintenance-rules/${ruleId}`)
+
+export const generateStarterMaintenanceRules = (carId: number) =>
+  API.post<GenerateStarterRulesResponse>(`/maintenance-rules/${carId}/generate-defaults`)

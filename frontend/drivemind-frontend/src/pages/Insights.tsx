@@ -9,6 +9,7 @@ import {
   InputLabel,
   CircularProgress,
   Chip,
+  Button,
   useTheme
 } from "@mui/material"
 
@@ -101,6 +102,10 @@ export default function Insights() {
         .trim()
     : "Vehicle Insight"
 
+  const vehicleSearchBase = vehicleTitle || "vehicle"
+  const youtubeReviewUrl =
+    `https://www.youtube.com/results?search_query=${encodeURIComponent(`${vehicleSearchBase} review`)}`
+
   return (
     <Box>
       <Typography
@@ -138,7 +143,7 @@ export default function Insights() {
         </Typography>
 
         <Typography sx={{ mb: 3, color: theme.palette.text.secondary }}>
-          Select a vehicle and generate a smart maintenance-focused summary based on its tracked data.
+          Select a vehicle and generate a smarter ownership summary using maintenance and fuel tracking data.
         </Typography>
 
         {loadingCars ? (
@@ -295,6 +300,140 @@ export default function Insights() {
                 >
                   {insight.recommendation}
                 </Typography>
+              </Paper>
+
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 3,
+                  borderRadius: 3,
+                  background: isDark
+                    ? "rgba(255,255,255,0.02)"
+                    : "rgba(255,255,255,0.88)",
+                  border: isDark
+                    ? "1px solid rgba(255,255,255,0.06)"
+                    : "1px solid rgba(59,130,246,0.12)"
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  mb={2}
+                  sx={{ color: theme.palette.text.primary }}
+                >
+                  Fuel Snapshot
+                </Typography>
+
+                <Box
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))",
+                    gap: 2
+                  }}
+                >
+                  <Box>
+                    <Typography sx={{ color: theme.palette.text.secondary }}>
+                      Fuel Logs
+                    </Typography>
+                    <Typography variant="h6" sx={{ color: theme.palette.text.primary }}>
+                      {insight.fuelLogCount ?? 0}
+                    </Typography>
+                  </Box>
+
+                  <Box>
+                    <Typography sx={{ color: theme.palette.text.secondary }}>
+                      Total Fuel Spend
+                    </Typography>
+                    <Typography variant="h6" sx={{ color: theme.palette.text.primary }}>
+                      ${Number(insight.totalFuelSpend ?? 0).toFixed(2)}
+                    </Typography>
+                  </Box>
+
+                  <Box>
+                    <Typography sx={{ color: theme.palette.text.secondary }}>
+                      Avg Fill Cost
+                    </Typography>
+                    <Typography variant="h6" sx={{ color: theme.palette.text.primary }}>
+                      ${Number(insight.averageFuelSpend ?? 0).toFixed(2)}
+                    </Typography>
+                  </Box>
+
+                  <Box>
+                    <Typography sx={{ color: theme.palette.text.secondary }}>
+                      Avg Fill Volume
+                    </Typography>
+                    <Typography variant="h6" sx={{ color: theme.palette.text.primary }}>
+                      {Number(insight.averageFuelVolume ?? 0).toFixed(2)} L
+                    </Typography>
+                  </Box>
+
+                  <Box>
+                    <Typography sx={{ color: theme.palette.text.secondary }}>
+                      Latest Fill Cost
+                    </Typography>
+                    <Typography variant="h6" sx={{ color: theme.palette.text.primary }}>
+                      {insight.latestFuelCost != null
+                        ? `$${Number(insight.latestFuelCost).toFixed(2)}`
+                        : "N/A"}
+                    </Typography>
+                  </Box>
+
+                  <Box>
+                    <Typography sx={{ color: theme.palette.text.secondary }}>
+                      Latest Fill Volume
+                    </Typography>
+                    <Typography variant="h6" sx={{ color: theme.palette.text.primary }}>
+                      {insight.latestFuelVolume != null
+                        ? `${Number(insight.latestFuelVolume).toFixed(2)} L`
+                        : "N/A"}
+                    </Typography>
+                  </Box>
+
+                  <Box>
+                    <Typography sx={{ color: theme.palette.text.secondary }}>
+                      Latest Fill Mileage
+                    </Typography>
+                    <Typography variant="h6" sx={{ color: theme.palette.text.primary }}>
+                      {insight.latestFuelMileage != null
+                        ? `${insight.latestFuelMileage} km`
+                        : "N/A"}
+                    </Typography>
+                  </Box>
+                </Box>
+              </Paper>
+
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 3,
+                  borderRadius: 3,
+                  background: isDark
+                    ? "rgba(255,255,255,0.02)"
+                    : "rgba(255,255,255,0.88)",
+                  border: isDark
+                    ? "1px solid rgba(255,255,255,0.06)"
+                    : "1px solid rgba(59,130,246,0.12)"
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  mb={1}
+                  sx={{ color: theme.palette.text.primary }}
+                >
+                  Watch Reviews
+                </Typography>
+
+                <Typography sx={{ mb: 2, color: theme.palette.text.secondary }}>
+                  Open YouTube reviews, ownership impressions, and walkarounds for this vehicle.
+                </Typography>
+
+                <Button
+                  variant="contained"
+                  href={youtubeReviewUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Watch on YouTube
+                </Button>
               </Paper>
             </Box>
           ) : null}

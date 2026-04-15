@@ -17,6 +17,7 @@ import Register from "./pages/Register"
 import Dashboard from "./pages/Dashboard"
 import Cars from "./pages/Cars"
 import Insights from "./pages/Insights"
+import VehicleSpotlight from "./pages/VehicleSpotlight"
 
 const ProtectedLayout = ({
   children,
@@ -113,6 +114,15 @@ const App = () => {
             element={
               <ProtectedLayout mode={mode} setMode={setMode}>
                 <Insights />
+              </ProtectedLayout>
+            }
+          />
+
+          <Route
+            path="/vehicle-spotlight"
+            element={
+              <ProtectedLayout mode={mode} setMode={setMode}>
+                <VehicleSpotlight />
               </ProtectedLayout>
             }
           />

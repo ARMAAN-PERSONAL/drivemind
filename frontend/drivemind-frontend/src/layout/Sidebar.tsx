@@ -4,6 +4,7 @@ import DashboardIcon from "@mui/icons-material/Dashboard"
 import LocalGasStationIcon from "@mui/icons-material/LocalGasStation"
 import BuildIcon from "@mui/icons-material/Build"
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome"
+import TravelExploreIcon from "@mui/icons-material/TravelExplore"
 import { Link, useLocation } from "react-router-dom"
 
 export default function Sidebar() {
@@ -87,6 +88,15 @@ export default function Sidebar() {
           sx={navButtonStyle("/insights")}
         >
           Insights
+        </Button>
+
+        <Button
+          component={Link}
+          to="/vehicle-spotlight"
+          startIcon={<TravelExploreIcon />}
+          sx={navButtonStyle("/vehicle-spotlight")}
+        >
+          Vehicle Spotlight
         </Button>
       </Box>
     </Box>

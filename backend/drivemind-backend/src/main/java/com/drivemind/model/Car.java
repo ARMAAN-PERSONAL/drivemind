@@ -1,8 +1,9 @@
 package com.drivemind.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,40 +21,35 @@ public class Car {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // VIN decoded vehicle identifier
     @Column(unique = true, nullable = false)
     private String vin;
 
     private String make;
-
     private String model;
-
     private Integer year;
-
     private String trim;
-
-    // current odometer reading
     private Integer currentMileage;
 
-    // 🔥 NEW: link car to user
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-
-
-    // when vehicle was added to system
     private LocalDateTime createdAt;
 
-    // relationship mappings
-    @OneToMany(mappedBy = "car", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "car", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<FuelLog> fuelLogs;
 
-    @OneToMany(mappedBy = "car", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "car", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<MaintenanceLog> maintenanceLogs;
 
-    @OneToMany(mappedBy = "car", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "car", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<MaintenanceRule> maintenanceRules;
+
+    @OneToMany(mappedBy = "car", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<Notification> notifications;
 
     @PrePersist

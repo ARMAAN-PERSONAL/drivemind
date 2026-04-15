@@ -7,15 +7,20 @@ import {
   Button,
   MenuItem,
   IconButton,
-  useTheme
+  useTheme,
+  Alert,
+  CircularProgress,
+  Chip
 } from "@mui/material"
 import DeleteIcon from "@mui/icons-material/Delete"
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome"
 
 import {
   getCars,
   getMaintenanceRules,
   addMaintenanceRule,
-  deleteMaintenanceRule
+  deleteMaintenanceRule,
+  generateStarterMaintenanceRules
 } from "../api/carApi"
 import type { MaintenanceRule } from "../api/carApi"
 
@@ -31,15 +36,20 @@ export default function Maintenance() {
   const [intervalKm, setIntervalKm] = useState("")
   const [description, setDescription] = useState("")
 
+  const [generating, setGenerating] = useState(false)
+  const [lastProfile, setLastProfile] = useState("")
+  const [banner, setBanner] = useState<{ type: "success" | "info" | "error"; text: string } | null>(null)
+
   useEffect(() => {
     loadCars()
   }, [])
 
   useEffect(() => {
     if (selectedCar) {
-      loadRules(selectedCar)
+      loadRules(Number(selectedCar))
     } else {
       setRules([])
+      setLastProfile("")
     }
   }, [selectedCar])
 
@@ -79,23 +89,63 @@ export default function Maintenance() {
       setServiceType("")
       setIntervalKm("")
       setDescription("")
+      setBanner({ type: "success", text: "Maintenance rule added." })
 
       loadRules(Number(selectedCar))
     } catch (err) {
       console.error("Failed to add rule", err)
-      alert("Could not save maintenance rule")
+      setBanner({ type: "error", text: "Could not save maintenance rule." })
+    }
+  }
+
+  const handleGenerateStarterRules = async () => {
+    if (!selectedCar) {
+      setBanner({ type: "info", text: "Select a car first to generate starter rules." })
+      return
+    }
+
+    try {
+      setGenerating(true)
+      setBanner(null)
+
+      const res = await generateStarterMaintenanceRules(Number(selectedCar))
+      const addedCount = res.data?.addedCount ?? 0
+      const maintenanceProfile = res.data?.maintenanceProfile ?? "General Vehicle"
+
+      setLastProfile(maintenanceProfile)
+
+      if (addedCount > 0) {
+        setBanner({
+          type: "success",
+          text: `${addedCount} AI starter maintenance rule${addedCount === 1 ? "" : "s"} added for profile: ${maintenanceProfile}.`
+        })
+      } else {
+        setBanner({
+          type: "info",
+          text: `No new starter rules were added. Existing rules already cover the ${maintenanceProfile} profile well enough.`
+        })
+      }
+
+      loadRules(Number(selectedCar))
+    } catch (err) {
+      console.error("Failed to generate starter rules", err)
+      setBanner({ type: "error", text: "Could not generate starter maintenance rules." })
+    } finally {
+      setGenerating(false)
     }
   }
 
   const handleDeleteRule = async (ruleId: number) => {
     try {
       await deleteMaintenanceRule(ruleId)
+      setBanner({ type: "success", text: "Maintenance rule deleted." })
+
       if (selectedCar) {
         loadRules(Number(selectedCar))
       }
     } catch (err) {
       console.error("Failed to delete rule", err)
-      alert("Could not delete maintenance rule")
+      setBanner({ type: "error", text: "Could not delete maintenance rule." })
     }
   }
 
@@ -109,6 +159,12 @@ export default function Maintenance() {
       >
         Maintenance Rules
       </Typography>
+
+      {banner && (
+        <Alert severity={banner.type} sx={{ mb: 3 }}>
+          {banner.text}
+        </Alert>
+      )}
 
       <Paper
         sx={{
@@ -144,6 +200,61 @@ export default function Maintenance() {
           mb: 3,
           borderRadius: 3,
           background: isDark
+            ? "linear-gradient(180deg,#0f172a,#111827)"
+            : "linear-gradient(180deg,#eef4ff,#f8fbff)",
+          border: isDark
+            ? "1px solid rgba(59,130,246,0.18)"
+            : "1px solid rgba(59,130,246,0.20)"
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 2,
+            flexWrap: "wrap"
+          }}
+        >
+          <Box>
+            <Typography
+              variant="h6"
+              sx={{ color: theme.palette.text.primary }}
+            >
+              AI Starter Rules
+            </Typography>
+
+            <Typography
+              sx={{ mt: 0.5, color: theme.palette.text.secondary, maxWidth: 720 }}
+            >
+              Generate a starter maintenance schedule that changes by vehicle profile instead of giving every car the exact same interval pattern.
+              You can still add your own custom rules anytime.
+            </Typography>
+
+            {lastProfile && (
+              <Box sx={{ mt: 1.5 }}>
+                <Chip label={`Detected Profile: ${lastProfile}`} />
+              </Box>
+            )}
+          </Box>
+
+          <Button
+            variant="contained"
+            startIcon={generating ? undefined : <AutoAwesomeIcon />}
+            onClick={handleGenerateStarterRules}
+            disabled={generating || !selectedCar}
+          >
+            {generating ? <CircularProgress size={20} color="inherit" /> : "Generate Starter Rules"}
+          </Button>
+        </Box>
+      </Paper>
+
+      <Paper
+        sx={{
+          p: 3,
+          mb: 3,
+          borderRadius: 3,
+          background: isDark
             ? "linear-gradient(180deg,#111827,#0f172a)"
             : "linear-gradient(180deg,#ffffff,#f6f9ff)",
           border: isDark
@@ -156,7 +267,7 @@ export default function Maintenance() {
           mb={2}
           sx={{ color: theme.palette.text.primary }}
         >
-          Add Rule
+          Add Custom Rule
         </Typography>
 
         <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/maintenance-rules")
@@ -46,6 +47,18 @@ public class MaintenanceRuleController {
         }
 
         return maintenanceRuleService.getRulesForCar(carId);
+    }
+
+    @PostMapping("/{carId}/generate-defaults")
+    public Map<String, Object> generateStarterRules(@PathVariable Long carId,
+                                                    Principal principal) {
+        Car car = carService.getCarById(carId).orElseThrow();
+
+        if (!car.getUser().getEmail().equals(principal.getName())) {
+            throw new RuntimeException("Unauthorized");
+        }
+
+        return maintenanceRuleService.generateStarterRules(carId);
     }
 
     @DeleteMapping("/{ruleId}")
